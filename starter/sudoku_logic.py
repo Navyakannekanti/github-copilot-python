@@ -136,7 +136,10 @@ def _count_solutions(board, max_count=2):
     """Count the number of solutions for a given puzzle, with early termination.
 
     This function counts valid solutions to a Sudoku puzzle using backtracking.
-    It stops searching as soon as the count reaches max_count, for efficiency.
+    It first validates that all existing clues are consistent with Sudoku rules.
+    If any clue conflicts, it returns 0 immediately. Otherwise, it counts solutions
+    via backtracking, stopping when max_count solutions are found.
+    
     The input board is not modified.
 
     Args:
@@ -145,13 +148,42 @@ def _count_solutions(board, max_count=2):
 
     Returns:
         int: The number of solutions found, capped at max_count.
+             Returns 0 if the board has conflicting clues.
              Returns immediately when count >= max_count.
              Typically: 0 (invalid/unsolvable), 1 (valid puzzle), or 2 (ambiguous).
     """
-    # Make a deep copy to avoid mutating the input board
+    # Step 1: Validate all existing clues before attempting backtracking
+    for row in range(SIZE):
+        for col in range(SIZE):
+            if board[row][col] != EMPTY:
+                num = board[row][col]
+                # Temporarily treat this cell as empty for validation
+                # Check if this number conflicts with row, column, or box
+                
+                # Check row: look for duplicate
+                for x in range(SIZE):
+                    if x != col and board[row][x] == num:
+                        return 0  # Duplicate in row
+                
+                # Check column: look for duplicate
+                for x in range(SIZE):
+                    if x != row and board[x][col] == num:
+                        return 0  # Duplicate in column
+                
+                # Check 3x3 box: look for duplicate
+                start_row = _get_box_start(row)
+                start_col = _get_box_start(col)
+                for i in range(BOX_SIZE):
+                    for j in range(BOX_SIZE):
+                        box_row = start_row + i
+                        box_col = start_col + j
+                        if (box_row != row or box_col != col) and board[box_row][box_col] == num:
+                            return 0  # Duplicate in box
+
+    # Step 2: Make a deep copy to avoid mutating the input board
     board_copy = [row[:] for row in board]
     
-    # Use a list to hold count so it can be modified in nested function
+    # Step 3: Use a list to hold count so it can be modified in nested function
     solution_count = [0]
 
     def backtrack():
