@@ -4,8 +4,6 @@ import pytest
 from sudoku_logic import (
     generate_puzzle,
     _count_solutions,
-    create_empty_board,
-    fill_board,
     SIZE,
     EMPTY,
 )
@@ -14,16 +12,35 @@ from sudoku_logic import (
 class TestCountSolutions:
     """Tests for the _count_solutions() helper function."""
 
-    def test_count_solutions_single_solution(self):
-        """Verify _count_solutions correctly counts single-solution puzzles."""
-        puzzle, _ = generate_puzzle(clues=35)
-        count = _count_solutions(puzzle, max_count=2)
+    def test_count_solutions_single_solution_deterministic(self):
+        """Verify _count_solutions correctly counts single-solution puzzles.
+        
+        Uses a deterministic single-solution Sudoku board.
+        Completes in < 1 second.
+        """
+        unique_board = [
+            [5, 3, 0, 0, 7, 0, 0, 0, 0],
+            [6, 0, 0, 1, 9, 5, 0, 0, 0],
+            [0, 9, 8, 0, 0, 0, 0, 6, 0],
+            [8, 0, 0, 0, 6, 0, 0, 0, 3],
+            [4, 0, 0, 8, 0, 3, 0, 0, 1],
+            [7, 0, 0, 0, 2, 0, 0, 0, 6],
+            [0, 6, 0, 0, 0, 0, 2, 8, 0],
+            [0, 0, 0, 4, 1, 9, 0, 0, 5],
+            [0, 0, 0, 0, 8, 0, 0, 7, 9],
+        ]
+        count = _count_solutions(unique_board, max_count=2)
         assert count == 1
 
-    def test_count_solutions_zero_solutions_invalid_puzzle(self):
-        """Verify _count_solutions returns 0 for invalid/unsolvable puzzles."""
-        # Create an intentionally invalid puzzle (duplicate 1s in first row)
-        board = [
+    def test_count_solutions_zero_solutions_invalid_board(self):
+        """Verify _count_solutions returns 0 for boards with conflicting clues.
+        
+        Uses a board with duplicate 1s in row 0, which violates Sudoku rules.
+        With the enhanced _count_solutions validation, this returns 0 immediately
+        without backtracking. Completes in < 0.01 seconds.
+        """
+        # Invalid: duplicate 1 in row 0
+        invalid_board = [
             [1, 1, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -34,56 +51,58 @@ class TestCountSolutions:
             [0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
-        count = _count_solutions(board, max_count=2)
+        count = _count_solutions(invalid_board, max_count=2)
         assert count == 0
 
-    def test_count_solutions_early_termination_deterministic(self):
-        """Verify _count_solutions stops at max_count with known multi-solution puzzle.
+    def test_count_solutions_multiple_solutions_deterministic(self):
+        """Verify _count_solutions detects multiple solutions and stops at max_count.
         
-        Uses a fixed, known Sudoku puzzle that has multiple solutions.
-        The pattern of givens is arranged such that multiple valid completions exist.
-        This is a minimal but well-known multi-solution puzzle.
+        Uses a verified multi-solution board with exactly 2 solutions.
+        This board is derived from a valid complete Sudoku with specific clues
+        removed to create exactly 2 valid completions.
+        Early termination at max_count=2 ensures fast completion (< 0.5s).
         """
-        # Known multi-solution puzzle: minimal clues arranged to allow multiple fills
-        board = [
-            [0, 0, 0, 0, 0, 0, 0, 1, 2],
-            [0, 0, 0, 0, 0, 0, 0, 0, 3],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        # Verified multi-solution board: exactly 2 solutions
+        multi_solution_board = [
+            [5, 3, 4, 0, 0, 8, 9, 1, 2],
+            [6, 7, 2, 1, 9, 5, 3, 4, 8],
+            [1, 9, 8, 3, 4, 2, 5, 6, 7],
+            [8, 5, 9, 0, 0, 1, 4, 2, 3],
+            [4, 2, 6, 8, 5, 3, 7, 9, 1],
+            [7, 1, 3, 9, 2, 4, 8, 5, 6],
+            [9, 6, 1, 5, 3, 7, 2, 8, 4],
+            [2, 8, 7, 4, 1, 9, 6, 3, 5],
+            [3, 4, 5, 2, 8, 6, 1, 7, 9],
         ]
-        # Should return exactly 2 (early termination at max_count)
-        count = _count_solutions(board, max_count=2)
+        count = _count_solutions(multi_solution_board, max_count=2)
         assert count == 2
 
-    def test_count_solutions_respects_max_count(self):
-        """Verify _count_solutions returns max_count when limit is reached.
+    def test_count_solutions_respects_max_count_parameter(self):
+        """Verify _count_solutions stops immediately when max_count is reached.
         
-        Uses the same known multi-solution puzzle to verify that the function
-        stops as soon as max_count solutions are found, not before.
+        Uses the same verified multi-solution board to confirm that the max_count
+        parameter causes early termination at exactly that count.
         """
-        board = [
-            [0, 0, 0, 0, 0, 0, 0, 1, 2],
-            [0, 0, 0, 0, 0, 0, 0, 0, 3],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        multi_solution_board = [
+            [5, 3, 4, 0, 0, 8, 9, 1, 2],
+            [6, 7, 2, 1, 9, 5, 3, 4, 8],
+            [1, 9, 8, 3, 4, 2, 5, 6, 7],
+            [8, 5, 9, 0, 0, 1, 4, 2, 3],
+            [4, 2, 6, 8, 5, 3, 7, 9, 1],
+            [7, 1, 3, 9, 2, 4, 8, 5, 6],
+            [9, 6, 1, 5, 3, 7, 2, 8, 4],
+            [2, 8, 7, 4, 1, 9, 6, 3, 5],
+            [3, 4, 5, 2, 8, 6, 1, 7, 9],
         ]
-        # With max_count=2, should return exactly 2
-        count = _count_solutions(board, max_count=2)
-        assert count == 2
+        count = _count_solutions(multi_solution_board, max_count=2)
+        assert count == 2, "Should stop at max_count=2"
 
-    def test_count_solutions_does_not_mutate_board(self):
-        """Verify _count_solutions does not modify the input board."""
-        board = [
+    def test_count_solutions_does_not_mutate_input_board(self):
+        """Verify _count_solutions does not modify the input board.
+        
+        Tests with an invalid board (quick return) to verify immutability.
+        """
+        original_board = [
             [1, 1, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -94,49 +113,71 @@ class TestCountSolutions:
             [0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
-        board_copy = [row[:] for row in board]
-        _count_solutions(board, max_count=2)
-        assert board == board_copy
+        board_copy = [row[:] for row in original_board]
+        _count_solutions(original_board, max_count=2)
+        assert original_board == board_copy, "Input board should not be mutated"
 
 
 class TestGeneratePuzzleUniqueSolution:
     """Tests for generate_puzzle() unique solution guarantee."""
 
     def test_generate_puzzle_returns_unique_solution_default(self):
-        """Verify generate_puzzle() with default clues=35 has exactly one solution."""
-        for _ in range(3):  # Run multiple times to verify consistency
+        """Verify generate_puzzle() with default clues=35 has exactly one solution.
+        
+        Runs 3 times to verify consistency across multiple generations.
+        Each puzzle is verified to have exactly 1 solution.
+        """
+        for _ in range(3):
             puzzle, solution = generate_puzzle()
             count = _count_solutions(puzzle, max_count=2)
             assert count == 1, f"Expected 1 solution, got {count}"
 
     def test_generate_puzzle_returns_unique_solution_hard(self):
-        """Verify generate_puzzle(clues=17) returns puzzle with exactly one solution."""
+        """Verify generate_puzzle(clues=17) returns puzzle with exactly one solution.
+        
+        Tests hard difficulty (17 clues, minimum Sudoku constraint).
+        Should complete within timeout despite higher generation difficulty.
+        """
         puzzle, solution = generate_puzzle(clues=17)
         count = _count_solutions(puzzle, max_count=2)
         assert count == 1
 
     def test_generate_puzzle_returns_unique_solution_medium(self):
-        """Verify generate_puzzle(clues=30) returns puzzle with exactly one solution."""
+        """Verify generate_puzzle(clues=30) returns puzzle with exactly one solution.
+        
+        Tests medium difficulty (30 clues).
+        """
         puzzle, solution = generate_puzzle(clues=30)
         count = _count_solutions(puzzle, max_count=2)
         assert count == 1
 
     def test_generate_puzzle_returns_unique_solution_easy(self):
-        """Verify generate_puzzle(clues=40) returns puzzle with exactly one solution."""
+        """Verify generate_puzzle(clues=40) returns puzzle with exactly one solution.
+        
+        Tests easy difficulty (40 clues).
+        """
         puzzle, solution = generate_puzzle(clues=40)
         count = _count_solutions(puzzle, max_count=2)
         assert count == 1
 
     def test_generate_puzzle_respects_exact_clue_count(self):
-        """Verify returned puzzle has exactly the requested number of clues."""
+        """Verify returned puzzle has exactly the requested number of clues.
+        
+        Tests multiple clue counts (17, 25, 30, 35, 40) to ensure the function
+        never silently changes the clue count.
+        """
         for clues in [17, 25, 30, 35, 40]:
             puzzle, _ = generate_puzzle(clues=clues)
             actual_clues = sum(1 for row in puzzle for cell in row if cell != EMPTY)
-            assert actual_clues == clues, \
+            assert actual_clues == clues, (
                 f"Requested {clues} clues, got {actual_clues}"
+            )
 
     def test_generate_puzzle_preserves_return_format(self):
-        """Verify return type is tuple[list[list[int]], list[list[int]]]."""
+        """Verify return type is tuple[list[list[int]], list[list[int]]].
+        
+        Validates structure and dimensions of returned puzzle and solution.
+        """
         puzzle, solution = generate_puzzle()
         
         # Check types
@@ -148,18 +189,21 @@ class TestGeneratePuzzleUniqueSolution:
         assert len(solution) == SIZE, f"solution should have {SIZE} rows"
         
         for row_idx, (puzzle_row, solution_row) in enumerate(zip(puzzle, solution)):
-            assert len(puzzle_row) == SIZE, \
+            assert len(puzzle_row) == SIZE, (
                 f"puzzle row {row_idx} should have {SIZE} cols"
-            assert len(solution_row) == SIZE, \
+            )
+            assert len(solution_row) == SIZE, (
                 f"solution row {row_idx} should have {SIZE} cols"
+            )
 
     def test_generate_puzzle_solution_is_complete(self):
         """Verify solution has all cells filled (no EMPTY/0 values)."""
         _, solution = generate_puzzle()
         for row_idx, row in enumerate(solution):
             for col_idx, cell in enumerate(row):
-                assert cell != EMPTY, \
+                assert cell != EMPTY, (
                     f"Solution has empty cell at [{row_idx}][{col_idx}]"
+                )
 
     def test_generate_puzzle_puzzle_contains_empty_cells(self):
         """Verify puzzle has empty cells (is not already solved)."""
@@ -168,7 +212,10 @@ class TestGeneratePuzzleUniqueSolution:
         assert empty_count > 0, "Puzzle should have empty cells"
 
     def test_generate_puzzle_signature_unchanged(self):
-        """Verify function signature is backward compatible."""
+        """Verify function signature is backward compatible.
+        
+        Tests both default and explicit clue arguments.
+        """
         # Test with no arguments (default)
         puzzle1, solution1 = generate_puzzle()
         assert puzzle1 is not None and solution1 is not None
