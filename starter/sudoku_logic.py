@@ -196,21 +196,35 @@ def _count_solutions(board, max_count=2):
         if solution_count[0] >= max_count:
             return
 
-        # Find the next empty cell
+        selected_cell = None
+        selected_candidates = None
         for row in range(SIZE):
             for col in range(SIZE):
                 if board_copy[row][col] == EMPTY:
-                    # Try each number 1-9
-                    for num in range(1, SIZE + 1):
-                        if is_safe(board_copy, row, col, num):
-                            board_copy[row][col] = num
-                            backtrack()
-                            board_copy[row][col] = EMPTY
-                    # If no number works, backtrack
-                    return
-        
-        # All cells filled: found a solution
-        solution_count[0] += 1
+                    candidates = [
+                        num
+                        for num in range(1, SIZE + 1)
+                        if is_safe(board_copy, row, col, num)
+                    ]
+                    if not candidates:
+                        return
+                    if (
+                        selected_candidates is None
+                        or len(candidates) < len(selected_candidates)
+                    ):
+                        selected_cell = (row, col)
+                        selected_candidates = candidates
+
+        if selected_cell is None:
+            # All cells filled: found a solution
+            solution_count[0] += 1
+            return
+
+        row, col = selected_cell
+        for candidate in selected_candidates:
+            board_copy[row][col] = candidate
+            backtrack()
+            board_copy[row][col] = EMPTY
 
     backtrack()
     return solution_count[0]
@@ -248,15 +262,34 @@ def generate_puzzle(clues=35):
         # 2. Keep a copy as the solution
         solution = copy.deepcopy(board)
 
-        # 3. Create a working copy for cell removal
+        # 3. Create a working copy for incremental cell removal
         puzzle_board = copy.deepcopy(board)
 
-        # 4. Remove exactly (81 - clues) cells randomly
-        remove_cells(puzzle_board, clues)
+        # 4. Try removals in a randomized order, keeping only unique puzzles
+        cells = [
+            (row, col)
+            for row in range(SIZE)
+            for col in range(SIZE)
+        ]
+        random.shuffle(cells)
+        filled_cells = SIZE * SIZE
 
-        # 5. Validate the puzzle has exactly one solution
-        if _count_solutions(puzzle_board, max_count=2) == 1:
-            # 6. Return immediately on success
+        for row, col in cells:
+            if filled_cells <= clues:
+                break
+
+            removed_value = puzzle_board[row][col]
+            puzzle_board[row][col] = EMPTY
+            if _count_solutions(puzzle_board, max_count=2) == 1:
+                filled_cells -= 1
+            else:
+                puzzle_board[row][col] = removed_value
+
+        # 5. Return only a puzzle with the requested clue count and one solution
+        if (
+            filled_cells == clues
+            and _count_solutions(puzzle_board, max_count=2) == 1
+        ):
             puzzle = copy.deepcopy(puzzle_board)
             return puzzle, solution
 

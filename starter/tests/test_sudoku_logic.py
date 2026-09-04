@@ -28,14 +28,17 @@ def test_create_empty_board_has_expected_shape_and_values():
     assert all(cell == sudoku_logic.EMPTY for row in board for cell in row)
 
 
-def test_deep_copy_does_not_share_nested_rows():
-    original = [[1, 2], [3, 4]]
+def test_generate_puzzle_returns_independent_puzzle_and_solution_boards():
+    puzzle, solution = sudoku_logic.generate_puzzle()
+    original_puzzle_value = puzzle[0][0]
+    original_solution_value = solution[0][0]
 
-    copied = sudoku_logic.deep_copy(original)
-    copied[0][0] = 9
+    puzzle[0][0] = -1
+    assert solution[0][0] == original_solution_value
 
-    assert original[0][0] == 1
-    assert copied[0][0] == 9
+    solution[0][0] = -2
+    assert puzzle[0][0] == -1
+    assert puzzle[0][0] != original_puzzle_value
 
 
 def test_is_safe_rejects_row_column_and_box_conflicts():

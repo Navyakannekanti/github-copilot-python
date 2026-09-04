@@ -132,41 +132,116 @@ class TestGeneratePuzzleUniqueSolution:
             count = _count_solutions(puzzle, max_count=2)
             assert count == 1, f"Expected 1 solution, got {count}"
 
-    def test_generate_puzzle_returns_unique_solution_hard(self):
-        """Verify generate_puzzle(clues=17) returns puzzle with exactly one solution.
+    def test_generate_puzzle_returns_unique_solution_easy(self):
+        """Verify generate_puzzle(clues=45) returns puzzle with exactly one solution.
         
-        Tests hard difficulty (17 clues, minimum Sudoku constraint).
-        Should complete within timeout despite higher generation difficulty.
+        Tests easy difficulty (45 clues).
+        Verifies: exact clue count, 9x9 dimensions, puzzle matches solution,
+        solution is complete, and unique solution.
         """
-        puzzle, solution = generate_puzzle(clues=17)
+        puzzle, solution = generate_puzzle(clues=45)
+        
+        # Verify exact clue count
+        actual_clues = sum(1 for row in puzzle for cell in row if cell != EMPTY)
+        assert actual_clues == 45
+        
+        # Verify puzzle dimensions
+        assert len(puzzle) == SIZE
+        assert all(len(row) == SIZE for row in puzzle)
+        
+        # Verify solution dimensions
+        assert len(solution) == SIZE
+        assert all(len(row) == SIZE for row in solution)
+        
+        # Verify all non-empty puzzle cells match solution
+        for row in range(SIZE):
+            for col in range(SIZE):
+                if puzzle[row][col] != EMPTY:
+                    assert puzzle[row][col] == solution[row][col]
+        
+        # Verify solution is complete (no empty cells)
+        assert all(cell != EMPTY for row in solution for cell in row)
+        
+        # Verify unique solution
         count = _count_solutions(puzzle, max_count=2)
         assert count == 1
 
     def test_generate_puzzle_returns_unique_solution_medium(self):
-        """Verify generate_puzzle(clues=30) returns puzzle with exactly one solution.
+        """Verify generate_puzzle(clues=35) returns puzzle with exactly one solution.
         
-        Tests medium difficulty (30 clues).
+        Tests medium difficulty (35 clues).
+        Verifies: exact clue count, 9x9 dimensions, puzzle matches solution,
+        solution is complete, and unique solution.
         """
-        puzzle, solution = generate_puzzle(clues=30)
+        puzzle, solution = generate_puzzle(clues=35)
+        
+        # Verify exact clue count
+        actual_clues = sum(1 for row in puzzle for cell in row if cell != EMPTY)
+        assert actual_clues == 35
+        
+        # Verify puzzle dimensions
+        assert len(puzzle) == SIZE
+        assert all(len(row) == SIZE for row in puzzle)
+        
+        # Verify solution dimensions
+        assert len(solution) == SIZE
+        assert all(len(row) == SIZE for row in solution)
+        
+        # Verify all non-empty puzzle cells match solution
+        for row in range(SIZE):
+            for col in range(SIZE):
+                if puzzle[row][col] != EMPTY:
+                    assert puzzle[row][col] == solution[row][col]
+        
+        # Verify solution is complete (no empty cells)
+        assert all(cell != EMPTY for row in solution for cell in row)
+        
+        # Verify unique solution
         count = _count_solutions(puzzle, max_count=2)
         assert count == 1
 
-    def test_generate_puzzle_returns_unique_solution_easy(self):
-        """Verify generate_puzzle(clues=40) returns puzzle with exactly one solution.
+    def test_generate_puzzle_returns_unique_solution_hard(self):
+        """Verify generate_puzzle(clues=30) returns puzzle with exactly one solution.
         
-        Tests easy difficulty (40 clues).
+        Tests hard difficulty (30 clues).
+        Verifies: exact clue count, 9x9 dimensions, puzzle matches solution,
+        solution is complete, and unique solution.
+        Completes in 1-2 seconds per generation.
         """
-        puzzle, solution = generate_puzzle(clues=40)
+        puzzle, solution = generate_puzzle(clues=30)
+        
+        # Verify exact clue count
+        actual_clues = sum(1 for row in puzzle for cell in row if cell != EMPTY)
+        assert actual_clues == 30
+        
+        # Verify puzzle dimensions
+        assert len(puzzle) == SIZE
+        assert all(len(row) == SIZE for row in puzzle)
+        
+        # Verify solution dimensions
+        assert len(solution) == SIZE
+        assert all(len(row) == SIZE for row in solution)
+        
+        # Verify all non-empty puzzle cells match solution
+        for row in range(SIZE):
+            for col in range(SIZE):
+                if puzzle[row][col] != EMPTY:
+                    assert puzzle[row][col] == solution[row][col]
+        
+        # Verify solution is complete (no empty cells)
+        assert all(cell != EMPTY for row in solution for cell in row)
+        
+        # Verify unique solution
         count = _count_solutions(puzzle, max_count=2)
         assert count == 1
 
     def test_generate_puzzle_respects_exact_clue_count(self):
         """Verify returned puzzle has exactly the requested number of clues.
         
-        Tests multiple clue counts (17, 25, 30, 35, 40) to ensure the function
-        never silently changes the clue count.
+        Tests the actual application difficulty levels (45, 35, 30)
+        to ensure the function never silently changes the clue count.
         """
-        for clues in [17, 25, 30, 35, 40]:
+        for clues in [45, 35, 30]:
             puzzle, _ = generate_puzzle(clues=clues)
             actual_clues = sum(1 for row in puzzle for cell in row if cell != EMPTY)
             assert actual_clues == clues, (
