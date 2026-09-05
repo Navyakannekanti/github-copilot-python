@@ -7,6 +7,63 @@ let hintCount = 0;
 let timerSeconds = 0;
 let timerInterval = null;
 
+const SCOREBOARD_KEY = 'sudokuTopScores';
+
+function getScores() {
+  try {
+    const scores = JSON.parse(localStorage.getItem(SCOREBOARD_KEY));
+    return Array.isArray(scores) ? scores : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveScores(scores) {
+  localStorage.setItem(SCOREBOARD_KEY, JSON.stringify(scores));
+}
+
+function addScore(name) {
+  const scores = getScores();
+
+  scores.push({
+    name: name.trim(),
+    time: timerSeconds,
+    difficulty: currentDifficulty,
+    hints: hintCount
+  });
+
+  scores.sort((a, b) => a.time - b.time);
+  saveScores(scores.slice(0, 10));
+  renderScoreboard();
+}
+
+function renderScoreboard() {
+  const tbody = document.getElementById('scoreboard-body');
+  const scores = getScores();
+
+  tbody.innerHTML = '';
+
+  scores.forEach((score, index) => {
+    const row = document.createElement('tr');
+
+    row.innerHTML = `
+      <td>${index + 1}</td>
+      <td>${escapeHtml(score.name)}</td>
+      <td>${formatTime(score.time)}</td>
+      <td>${score.difficulty.charAt(0).toUpperCase() + score.difficulty.slice(1)}</td>
+      <td>${score.hints}</td>
+    `;
+
+    tbody.appendChild(row);
+  });
+}
+
+function escapeHtml(value) {
+  const div = document.createElement('div');
+  div.textContent = value;
+  return div.innerHTML;
+}
+
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
@@ -290,9 +347,22 @@ async function checkSolution() {
   }
   if (incorrect.size === 0) {
   stopTimer();
+
   msg.style.color = '#388e3c';
   msg.innerText = 'Congratulations! You solved it!';
+
+  const playerName = window.prompt(
+    'Congratulations! Enter your name for the scoreboard:'
+  );
+
+  if (playerName && playerName.trim()) {
+    addScore(playerName);
+  }
+} else {
+  msg.style.color = '#d32f2f';
+  msg.innerText = 'Some cells are incorrect.';
 }
+
 }
 
 // Wire buttons
@@ -310,5 +380,6 @@ window.addEventListener('load', () => {
   document.getElementById('check-solution').addEventListener('click', checkSolution);
   
   // Initialize with default difficulty
+  renderScoreboard();
   newGame();
 });

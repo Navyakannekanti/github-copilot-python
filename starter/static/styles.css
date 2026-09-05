@@ -153,3 +153,30 @@ button:hover {
     font-weight: bold;
     margin: 15px 0;
 }
+
+#scoreboard {
+    width: min(700px, 90%);
+    margin: 30px auto;
+}
+
+#scoreboard h2 {
+    margin-bottom: 15px;
+}
+
+#scoreboard table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+}
+
+#scoreboard th,
+#scoreboard td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: center;
+}
+
+#scoreboard th {
+    font-weight: bold;
+    background: #f0f0f0;
+}
