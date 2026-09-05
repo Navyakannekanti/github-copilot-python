@@ -4,6 +4,36 @@ let puzzle = [];
 let currentDifficulty = 'medium';
 let hintCount = 0;
 
+const DARK_MODE_KEY = 'sudokuDarkMode';
+
+function applyDarkMode(enabled) {
+  document.body.classList.toggle('dark-mode', enabled);
+
+  const button = document.getElementById('dark-mode-toggle');
+
+  if (button) {
+    button.innerText = enabled ? '☀️ Light Mode' : '🌙 Dark Mode';
+  }
+}
+
+function initializeDarkMode() {
+  const savedPreference = localStorage.getItem(DARK_MODE_KEY);
+  const enabled = savedPreference === 'true';
+
+  applyDarkMode(enabled);
+
+  const button = document.getElementById('dark-mode-toggle');
+
+  if (button) {
+    button.addEventListener('click', () => {
+      const darkModeEnabled = !document.body.classList.contains('dark-mode');
+
+      applyDarkMode(darkModeEnabled);
+      localStorage.setItem(DARK_MODE_KEY, String(darkModeEnabled));
+    });
+  }
+}
+
 let timerSeconds = 0;
 let timerInterval = null;
 
@@ -367,6 +397,8 @@ async function checkSolution() {
 
 // Wire buttons
 window.addEventListener('load', () => {
+
+  initializeDarkMode();
   // Difficulty selector
   document.querySelectorAll('.difficulty-btn').forEach(btn => {
     btn.addEventListener('click', () => {

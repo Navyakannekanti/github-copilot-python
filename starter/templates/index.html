@@ -7,40 +7,45 @@
 </head>
 <body>
   <h1>Sudoku Game</h1>
-  
+
+  <button id="dark-mode-toggle" type="button">🌙 Dark Mode</button>
+
   <div class="difficulty-selector">
     <label>Difficulty:</label>
     <button class="difficulty-btn" data-difficulty="easy">Easy (45)</button>
     <button class="difficulty-btn" data-difficulty="medium" data-selected="true">Medium (35)</button>
     <button class="difficulty-btn" data-difficulty="hard">Hard (30)</button>
   </div>
-  
+
   <div id="sudoku-board"></div>
+
   <div id="timer">Time: 00:00</div>
+
   <div class="controls">
-  <button id="new-game">New Game</button>
-  <button id="hint">Hint</button>
-  <button id="check-solution">Check Solution</button>
-  <span id="hint-count">Hints: 0</span>
-  <span id="message"></span>
-</div>
+    <button id="new-game">New Game</button>
+    <button id="hint">Hint</button>
+    <button id="check-solution">Check Solution</button>
+    <span id="hint-count">Hints: 0</span>
+    <span id="message"></span>
+  </div>
 
-<div id="scoreboard">
-  <h2>Top 10 Scores</h2>
+  <div id="scoreboard">
+    <h2>Top 10 Scores</h2>
 
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Name</th>
-        <th>Time</th>
-        <th>Difficulty</th>
-        <th>Hints</th>
-      </tr>
-    </thead>
-    <tbody id="scoreboard-body"></tbody>
-  </table>
-</div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Time</th>
+          <th>Difficulty</th>
+          <th>Hints</th>
+        </tr>
+      </thead>
+      <tbody id="scoreboard-body"></tbody>
+    </table>
+  </div>
+
   <script src="/static/main.js"></script>
 </body>
 </html>
