@@ -4,6 +4,38 @@ let puzzle = [];
 let currentDifficulty = 'medium';
 let hintCount = 0;
 
+let timerSeconds = 0;
+let timerInterval = null;
+
+function formatTime(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+}
+
+function updateTimerDisplay() {
+  document.getElementById('timer').innerText = `Time: ${formatTime(timerSeconds)}`;
+}
+
+function startTimer() {
+  stopTimer();
+  timerSeconds = 0;
+  updateTimerDisplay();
+
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval !== null) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+}
+
 function getConflictingCells(board, row, col, value) {
   // Returns array of [row, col] that have same value in same row, column, or 3x3 box
   if (!value || value < 1 || value > 9) {
@@ -216,9 +248,11 @@ async function newGame() {
   }
   
   const data = await res.json();
-  renderPuzzle(data.puzzle);
-  document.getElementById('message').innerText = '';
-  resetHintCount();
+renderPuzzle(data.puzzle);
+document.getElementById('message').innerText = '';
+resetHintCount();
+startTimer();
+  
 }
 
 async function checkSolution() {
@@ -255,12 +289,10 @@ async function checkSolution() {
     }
   }
   if (incorrect.size === 0) {
-    msg.style.color = '#388e3c';
-    msg.innerText = 'Congratulations! You solved it!';
-  } else {
-    msg.style.color = '#d32f2f';
-    msg.innerText = 'Some cells are incorrect.';
-  }
+  stopTimer();
+  msg.style.color = '#388e3c';
+  msg.innerText = 'Congratulations! You solved it!';
+}
 }
 
 // Wire buttons
