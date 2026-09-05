@@ -379,7 +379,7 @@ async function checkSolution() {
   stopTimer();
 
   msg.style.color = '#388e3c';
-  msg.innerText = 'Congratulations! You solved it!';
+  msg.innerText = `Congratulations! You solved it in ${formatTime(timerSeconds)} with ${hintCount} hint${hintCount === 1 ? '' : 's'}.`;msg.innerText = `Congratulations! You solved it in ${formatTime(timerSeconds)} with ${hintCount} hint${hintCount === 1 ? '' : 's'}.`;
 
   const playerName = window.prompt(
     'Congratulations! Enter your name for the scoreboard:'
