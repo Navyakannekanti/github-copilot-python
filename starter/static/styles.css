@@ -48,6 +48,24 @@ h1 {
     background: #ffcdd2;
 }
 
+.sudoku-cell.conflict {
+    background: #fff9c4;
+    font-weight: bold;
+}
+
+.sudoku-cell.prefilled.conflict {
+    background: #fff9c4;
+}
+
+.sudoku-cell.hinted {
+    background: #c8e6c9;
+    font-weight: bold;
+}
+
+.sudoku-cell.prefilled.hinted {
+    background: #c8e6c9;
+}
+
 .sudoku-cell:nth-child(3),
 .sudoku-cell:nth-child(6) {
     border-right: 3px solid #333;
@@ -56,6 +74,52 @@ h1 {
 .sudoku-row:nth-child(3) .sudoku-cell,
 .sudoku-row:nth-child(6) .sudoku-cell {
     border-bottom: 3px solid #333;
+}
+
+.difficulty-selector {
+    margin: 20px auto;
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    align-items: center;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.difficulty-selector label {
+    font-weight: bold;
+    color: #333;
+    margin-right: 10px;
+}
+
+.difficulty-btn {
+    padding: 10px 16px;
+    margin: 0;
+    font-size: 14px;
+    border: 2px solid #ccc;
+    background: #fff;
+    color: #333;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.difficulty-btn:hover {
+    border-color: #1976d2;
+    color: #1976d2;
+}
+
+.difficulty-btn.selected {
+    background: #1976d2;
+    color: #fff;
+    border-color: #1976d2;
+    font-weight: bold;
+}
+
+.difficulty-btn.selected:hover {
+    background: #1565c0;
+    border-color: #1565c0;
 }
 
 .controls {
